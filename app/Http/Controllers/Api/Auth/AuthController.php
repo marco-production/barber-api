@@ -3,26 +3,15 @@
 namespace App\Http\Controllers\Api\Auth;
 
 use App\Exceptions\AuthException;
-//use App\Models\UserEntities\ForgotPassword;
-//use App\Models\UserEntities\EmailVerification;
-//use App\Http\Controllers\Api\GeolocationController;
 use App\Http\Controllers\Controller;
-//use App\Mail\ForgotPasswordMail;
-//use App\Mail\VerifyAccountMail;
-//use App\Traits\PhoneVerification;
 use App\Http\Requests\RegisterRequest;
+use App\Http\Resources\UserResource;
 use App\Services\AuthService;
 use App\Services\PasswordService;
 use App\Services\UserService;
 use Illuminate\Http\Request;
-use Carbon\Carbon;
-//use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
-//use Illuminate\Support\Facades\Mail;
-//use Illuminate\Support\Facades\App;
-use Illuminate\Support\Str;
-
 
 class AuthController extends Controller
 {    
@@ -52,7 +41,7 @@ class AuthController extends Controller
             if($validator->fails()) 
                 return response()->json(['errors' => $validator->errors()->all()], 400);
 
-            $result = $this->auth_service->login($validator->validated());
+            $result = $this->auth_service->login($validator->validated(), $request->userAgent(), $request->ip());
 
             return response()->json($result, 200);
 
@@ -73,12 +62,11 @@ class AuthController extends Controller
             $data = $request->safe()->merge([
                 'avatar' => 'default.png',
                 'password' => Hash::make($request->password),
-                'remember_token' => Str::random(10),
             ]);
-            
-            $result = $this->auth_service->register($data);
 
-            return response()->json(['user' => $result], 201);
+            $result = $this->auth_service->register($data->toArray());
+
+            return response()->json(['user' => new UserResource($result)], 201);
 
         } catch(\Exception $e) {
             return response()->json(['errors' => $e->getMessage()], 500);

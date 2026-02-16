@@ -10,9 +10,9 @@ interface UserInterface
 
     //public function update(array $data) : User;
 
-    public function findByEmail(string $email) : User;
+    public function findByEmail(string $email) : ?User;
 
-    public function findByEmailWithTrashed(string $email) : User;
+    public function findByEmailWithTrashed(string $email) : ?User;
     
     public function existsBySlug(string $slug) : bool;
 }

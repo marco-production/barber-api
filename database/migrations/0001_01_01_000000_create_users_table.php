@@ -14,17 +14,20 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
+            $table->string('lastname');
+            $table->string('email')->unique()->index();
+            $table->string('phone_number', 40)->unique()->nullable();
+            $table->unsignedBigInteger('country_id')->nullable();
+            $table->string('avatar');
+            $table->boolean('is_verified')->default(false);
+            $table->string('slug')->unique()->nullable();
             $table->string('password');
-            $table->rememberToken();
+            $table->boolean('active')->default(true);
+            $table->timestamp('email_verified_at')->nullable();
             $table->timestamps();
-        });
+            $table->softDeletes($column = 'deleted_at', $precision = 0);
 
-        Schema::create('password_reset_tokens', function (Blueprint $table) {
-            $table->string('email')->primary();
-            $table->string('token');
-            $table->timestamp('created_at')->nullable();
+            $table->foreign('country_id')->references('id')->on('countries');
         });
 
         Schema::create('sessions', function (Blueprint $table) {

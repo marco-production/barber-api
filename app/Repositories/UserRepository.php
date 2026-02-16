@@ -22,7 +22,7 @@ class UserRepository implements UserInterface
         return User::firstWhere('email', $email);
     }
 
-    public function findByEmailWithTrashed(string $email) : User
+    public function findByEmailWithTrashed(string $email) : ?User
     {
         return User::withTrashed()->firstWhere('email', $email);
     }

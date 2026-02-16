@@ -16,7 +16,7 @@ class AuthService
        private UserRepository $userRepository
     ) {}
 
-    public function login(array $data): array
+    public function login(array $data, ?string $user_agent, ?string $ip): array
     {
         $auth = $this->userRepository->findByEmailWithTrashed($data['email']);
 
@@ -40,6 +40,7 @@ class AuthService
             throw new AuthException(__('not_have_permission'), 401);
         }
 
+        // If user is not verified return it without token
         if (!$auth->is_verified) {
             return [
                 'user' => $auth,
@@ -47,11 +48,18 @@ class AuthService
             ];
         }
 
-        $accessToken = $auth->createToken('Xperience')->accessToken;
+        //Create token
+        $accessToken = $auth->createToken('mobile');
+
+        // Save user agent
+        $accessToken->accessToken->forceFill([
+            'user_agent' => $user_agent,
+            'ip' => $ip
+        ])->save();
 
         return [
             'user' => $auth,
-            'accessToken' => $accessToken
+            'accessToken' => $accessToken->plainTextToken
         ];
     }
 
