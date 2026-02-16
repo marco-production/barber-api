@@ -16,7 +16,7 @@ class UserRepository implements UserInterface
     {
         
     } */
-
+ 
     public function findByEmail(string $email) : User
     {
         return User::firstWhere('email', $email);
