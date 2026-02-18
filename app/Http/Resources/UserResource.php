@@ -26,6 +26,7 @@ class UserResource extends JsonResource
             'is_verified' => $this->is_verified,
             'active' => $this->active,
             'roles' => $this->getRoleNames(),
+            'deleted_at' => $this->deleted_at,
         ];
     }
 }

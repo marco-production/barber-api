@@ -34,7 +34,9 @@ class User extends Authenticatable
         'password',
         'country_id',
         'is_verified',
-        'active'
+        'active',
+        'google_id',
+        'email_verified_at'
     ];
 
     protected $attributes = [
@@ -50,6 +52,7 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'google_id'
     ];
 
     /**
@@ -71,6 +74,15 @@ class User extends Authenticatable
             'active' => 'boolean',
         ];
     }
+
+
+    /* protected static function booted()
+    {
+        static::created(function ($user) {
+            $user->assignRole('User');
+        });
+    } */
+
 
     /**
      * Role Attribute

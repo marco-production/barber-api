@@ -12,14 +12,19 @@ class UserRepository implements UserInterface
         return User::create($data);
     }
 
-    /* public function update(array $data) : User
+    public function firstOrCreate(array $findBy, array $data) : User
     {
-        
-    } */
+        return User::firstOrCreate($findBy, $data);
+    }
  
-    public function findByEmail(string $email) : User
+    public function findByEmail(string $email) : ?User
     {
         return User::firstWhere('email', $email);
+    }
+
+    public function findByGoogleId(string $google_id) : ?User
+    {
+        return User::firstWhere('google_id', $google_id);
     }
 
     public function findByEmailWithTrashed(string $email) : ?User

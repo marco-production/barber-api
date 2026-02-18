@@ -15,8 +15,6 @@ use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {    
-    //use PhoneVerification;
-
     public function __construct(
         private AuthService $auth_service,
         private UserService $user_service,
@@ -60,7 +58,6 @@ class AuthController extends Controller
     {
         try {
             $data = $request->safe()->merge([
-                'avatar' => 'default.png',
                 'password' => Hash::make($request->password),
             ]);
 
@@ -99,6 +96,4 @@ class AuthController extends Controller
             return response()->json(['errors' => $e->getMessage()], $e->getCode() ?: 500);
         }
     }
-
-
 }
