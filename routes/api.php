@@ -2,16 +2,15 @@
 
 use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\Auth\SocialAuthController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-//Auth routes without login
+// Auth routes without login
 Route::controller(AuthController::class)->group(function () {
     Route::post('/login', 'login');
     Route::post('/register', 'register');
     Route::post('/forgot-password', 'forgotPassword');
-    //Route::post('/forgot-password-code', 'validateForgotPasswordCode' );
-    //Route::post('/restore-password', 'restorePassword');
+    Route::post('/forgot-password-code', 'validateForgotPasswordCode' );
+    Route::post('/restore-password', 'restorePassword');
 
     //Account verification routes
     //Route::post('/email-verification', 'emailVerification');
@@ -19,9 +18,12 @@ Route::controller(AuthController::class)->group(function () {
     //Route::post('/code-verification', 'codeVerification');
 });
 
+// Social loging routes
 Route::post('/login/google', [SocialAuthController::class, 'loginWithGoogle']);
 
+// Auth routes
+Route::group(['middleware' => [/* 'cors',  */'auth:sanctum']], function () {
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+    Route::post('/logout', [AuthController::class, 'logout']);
+    
+});

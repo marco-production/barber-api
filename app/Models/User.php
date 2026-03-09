@@ -2,13 +2,12 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
@@ -30,18 +29,14 @@ class User extends Authenticatable
         'email',
         'phone_number',
         'avatar',
+        'is_social_avatar',
         'slug',
         'password',
         'country_id',
         'is_verified',
         'active',
         'google_id',
-        'email_verified_at'
-    ];
-
-    protected $attributes = [
-        'active' => true,
-        'is_verified' => false,
+        'email_verified_at',
     ];
 
     /**
@@ -52,7 +47,7 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
-        'google_id'
+        'google_id',
     ];
 
     /**
@@ -85,14 +80,14 @@ class User extends Authenticatable
 
 
     /**
-     * Role Attribute
+     * Avatar URL Attribute
      * 
      * @return Attribute
      */
-    /* protected function roles(): Attribute
+    protected function avatarUrl(): Attribute
     {
         return Attribute::make(
-            get: fn () => $this->getRoleNames()
+            get: fn () => $this->is_social_avatar ? $this->avatar : Storage::disk('public')->url('avatar/' . $this->avatar)
         );
-    } */
+    }
 }

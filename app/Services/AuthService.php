@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Exceptions\AuthException;
 use App\Models\User;
 use App\Repositories\UserRepository;
-//use App\Traits\Handlesvalidations;
 use Google\Client;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -13,15 +12,21 @@ use App\Http\Resources\UserResource;
 
 class AuthService
 {
-    //use Handlesvalidations;
-
     /**
      * Create a new class instance.
      */
     public function __construct(
-       private UserRepository $userRepository
+       private readonly UserRepository $userRepository
     ) {}
 
+    /**
+     * Traditional Login
+     * 
+     * @param  array $data
+     * @param  ?string  $user:agent
+     * @param  ?string  $ip
+     * @return array
+     */
     public function login(array $data, ?string $user_agent, ?string $ip): array
     {
         $user = $this->userRepository->findByEmailWithTrashed($data['email']);
@@ -54,7 +59,7 @@ class AuthService
         // If user is not verified return it without token
         if (!$user->is_verified) {
             return [
-                'user' => $user,
+                'user' => new UserResource($user),
                 'accessToken' => null
             ];
         }
@@ -69,11 +74,17 @@ class AuthService
         ])->save();
 
         return [
-            'user' => $user,
+            'user' => new UserResource($user),
             'accessToken' => $accessToken->plainTextToken
         ];
     }
 
+    /**
+     * Traditional register
+     * 
+     * @param  array $data
+     * @return User
+     */
     public function register(array $data) : User
     {
         //Create User
@@ -90,6 +101,14 @@ class AuthService
         return $user;
     }
 
+    /**
+     * Google Login
+     * 
+     * @param  array $data
+     * @param  ?string  $user:agent
+     * @param  ?string  $ip
+     * @return array
+     */
     public function loginWithGoogle(array $data, ?string $user_agent, ?string $ip) : array
     {
         $client = new Client([
@@ -107,34 +126,36 @@ class AuthService
 
         $user = $this->userRepository->findByGoogleId($payload['sub']);
 
+        // If don't exists a User with Google account
         if (!$user) {
 
-                $user = $this->userRepository->findByEmail($payload['email']);
+            $user = $this->userRepository->findByEmail($payload['email']);
 
-                if ($user) {
+            if ($user) {
 
-                    $user->update([
-                        'google_id' => $payload['sub'],
-                        'is_verified' => true,
-                        'email_verified_at' => now()
-                    ]);
+                $user->update([
+                    'google_id' => $payload['sub'],
+                    'is_verified' => true,
+                    'email_verified_at' => now()
+                ]);
 
-                } else {
+            } else {
 
-                    $user = $this->userRepository->create([
-                        'email' => $payload['email'],
-                        'google_id' => $payload['sub'],
-                        'name' => $payload['given_name'] ?? 'User',
-                        'lastname' => $payload['family_name'] ?? null,
-                        'is_verified' => true,
-                        'slug' => Str::slug($payload['name'] . ' ' . ($payload['family_name'] ?? '')),
-                        'email_verified_at' => now(),
-                        'avatar' => $payload['picture'] ?? null
-                    ]);
+                $user = $this->userRepository->create([
+                    'email' => $payload['email'],
+                    'google_id' => $payload['sub'],
+                    'name' => $payload['given_name'] ?? 'User',
+                    'lastname' => $payload['family_name'] ?? null,
+                    'is_verified' => true,
+                    'slug' => Str::slug($payload['name'] . ' ' . ($payload['family_name'] ?? '')),
+                    'email_verified_at' => now(),
+                    'avatar' => $payload['picture'] ?? null,
+                    'is_social_avatar' => $payload['picture'] ? true : false
+                ]);
 
-                    $user->assignRole('User');
-
-                }
+                $user->assignRole('User');
+                $user = $user->fresh();
+            }
         }
 
         // Validations
@@ -155,8 +176,8 @@ class AuthService
 
         // Save user agent
         $accessToken->accessToken->forceFill([
-            'user_agent' => $user_agent,
-            'ip' => $ip
+            //'user_agent' => $user_agent,
+            //'ip' => $ip
         ])->save();
 
         return [
@@ -164,5 +185,4 @@ class AuthService
             'accessToken' => $accessToken->plainTextToken
         ];
     }
-
 }

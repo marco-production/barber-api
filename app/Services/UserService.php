@@ -7,7 +7,7 @@ use App\Repositories\UserRepository;
 
 class UserService
 {
-    private UserRepository $userRepository;
+    private readonly UserRepository $userRepository;
 
     /**
      * Create a new class instance.
@@ -23,7 +23,7 @@ class UserService
         $user = $this->userRepository->findByEmailWithTrashed($email);
 
         if(!$user) {
-            throw new \Exception("The email you entered does not exist in our records.", 400); 
+            throw new \Exception("The email you entered does not exist in our records.", 400); // Joel
         }
 
         return $user;

@@ -82,18 +82,83 @@ class AuthController extends Controller
             'email' => 'required|string|email|max:190'
         ]);
 
-        if($validator->fails()) return response()->json(['errors' => $validator->errors()->all()], 422);
+        if($validator->fails()) 
+            return response()->json(['errors' => $validator->errors()->all()], 422);
 
         try {
-            //Verify if exists this User
             $user = $this->user_service->findByEmailWithTrashed($request->email);
+
+            // If user doesn't exists
+            if(!$user) return response()->json(['errors' => 'The email you entered does not exist in our records.'], 400); // Joel - Agregar esto a es.json y en.json
 
             // Forgot password process
             $this->password_service->forgotPassword($user);
-            return response()->json(['message' => 'Password recovery email sent successfully.'], 200);
+            return response()->json(['message' => 'Password recovery email sent successfully.'], 200); // Joel
 
         } catch(\Exception $e) {
             return response()->json(['errors' => $e->getMessage()], $e->getCode() ?: 500);
         }
     }
+
+    /**
+     * Validate Forgot Password Code
+     * 
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function validateForgotPasswordCode(Request $request) 
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|string|email|max:190',
+            'code' => 'required|integer',
+        ]);
+
+        if($validator->fails()) return response()->json(['errors' => $validator->errors()->all()], 422);
+
+        try {
+            $this->password_service->validateCode($request->email, $request->code);
+            return response()->json(['message' => 'Code validated successfully!'], 200); // Joel
+
+        } catch (\Exception $e) {
+            return response()->json(['errors' => $e->getMessage()], $e->getCode());
+        }
+    }
+
+    /**
+     * Restore Password
+     * 
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function restorePassword(Request $request) 
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|string|email|max:190',
+            'password' => 'required|string|min:6|confirmed',
+        ]);
+
+        if($validator->fails()) return response()->json(['errors' => $validator->errors()->all()], 422);
+
+        try {
+            $result = $this->password_service->restorePassword($request->email, $request->password);
+            return response()->json($result, 200);
+
+        } catch (\Exception $e) {
+            return response()->json(['errors' => $e->getMessage()], $e->getCode());
+        }
+    }
+
+    /**
+     * User Logout
+     * 
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function logout(Request $request) 
+    {
+        $request->user()->currentAccessToken()->delete();
+        return response()->json(['message' => 'You have been successfully logged out!'], 204); // Joel
+    }
+
+    
 }
