@@ -77,8 +77,8 @@ class PasswordService
 
         // Save user agent
         $accessToken->accessToken->forceFill([
-            'user_agent' => $request->user_agent,
-            'ip' => $request->ip
+            //'user_agent' => $request->user_agent,
+            //'ip' => $request->ip
         ])->save();
 
         return [

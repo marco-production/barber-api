@@ -176,8 +176,8 @@ class AuthService
 
         // Save user agent
         $accessToken->accessToken->forceFill([
-            //'user_agent' => $user_agent,
-            //'ip' => $ip
+            'user_agent' => $user_agent,
+            'ip' => $ip
         ])->save();
 
         return [
